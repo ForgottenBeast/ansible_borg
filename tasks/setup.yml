@@ -1,0 +1,12 @@
+- name: "Copying backup script"
+  template:
+    src: backup.j2
+    dest: /bin/borg_{{ inventory_hostname }}_backup
+    mode: "711"
+
+- name: "adding cronjob"
+  cron:
+    name: "borg container backup"
+    minute: "0"
+    hour: "3"
+    job: "/bin/borg_{{ inventory_hostname }}_backup 2>> /var/log/borg_bklog"

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+nohup sshfs {{ borg.dest }}:{{ borg.path }} {{ borg.mount_point }} -p {{ borg.port }}
+
+{% for vol in borg.volumes %}
+docker run --rm -i -v {{ vol }}:/volume:ro -v /tmp/{{ vol }}:/backup {{ alpine_image }} \
+    cp -a /volume/. /backup
+
+borg create -v --stats --compression lzma,5 {{ borg.mount_point }}::{{ vol }}-`date +%d-%m-%Y:%H:%M:%S` /tmp/{{ vol }}
+
+rm -r /tmp/{{ vol }}
+
+borg prune -v --list {{ borg.mount_point }} --prefix {{ vol }}- --keep-within=1d --keep-daily=7 --keep-weekly=4 --keep-monthly=6
+
+{% endfor %}
+
+umount {{ borg.mount_point }}

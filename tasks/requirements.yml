@@ -1,0 +1,61 @@
+- name: "Install pexpect"
+  pip:
+    name: pexpect
+
+- name: "add jessie-backports repository"
+  apt_repository:
+    repo: deb http://ftp.debian.org/debian jessie-backports main
+    state: present
+
+- name: "borg and sshfs Install"
+  apt:
+    name: "{{ item }}"
+    default_release: jessie-backports
+    update_cache: True
+  with_items:
+    - borgbackup
+    - sshfs
+
+- name: "generating ssh key"
+  tags: borg_setup
+  user:
+    name: root
+    generate_ssh_key: True
+
+- name: "adding ssh key to backup server"
+  tags: borg_setup
+  expect:
+    command: ssh-copy-id {{ borg.dest }} -p {{ borg.port }}
+    responses:
+      "authenticity": "yes"
+      "password": "{{ borg.password }}"
+      "Are you sure you want to continue connecting": "yes"
+
+- name: "creating backup folder on backup server"
+  tags: borg_setup
+  expect:
+    command: ssh {{ borg.dest }} -p {{ borg.port }} mkdir -p {{ borg.path }}
+    responses:
+      "Are you sure you want to continue connecting": "yes"
+
+- name: "creating backup mount point"
+  tags: borg_setup
+  file:
+    name: "{{ borg.mount_point }}"
+    state: directory
+
+- name: "Mouting remote backup folder"
+  tags: borg_init
+  command: nohup sshfs {{ borg.dest }}:{{ borg.path }} {{ borg.mount_point }} -p {{ borg.port }}
+
+- name: "Initializing borg repository"
+  tags: borg_init
+  expect:
+    command: borg init {{ borg.mount_point }}
+    responses:
+      "Enter": "\r"
+      "verification": "N"
+
+- name: "Unmounting backup folder"
+  tags: borg_init
+  command: umount {{ borg.mount_point }}

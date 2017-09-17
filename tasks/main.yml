@@ -1,0 +1,13 @@
+- include: requirements.yml
+  become: True
+  tags:
+    - borg_install
+
+- include: setup.yml
+  become: True
+  tags:
+    - borg_setup
+
+- include: restore.yml
+  tags: borg_restore
+  become: True

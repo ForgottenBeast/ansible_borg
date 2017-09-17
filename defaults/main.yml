@@ -1,0 +1,15 @@
+alpine_image: forgottenbeast/alpine:multiarch
+
+borg:
+  dest: rancher@192.168.200.3
+  port: 22
+  password: rancher
+  path: /home/rancher/backups
+  mount_point: /root/backups
+  
+  volumes:
+    - "vpn_data"
+
+#volume name: backup name
+borg_restore:
+#  "vpn_data": "vpn_data-06-09-2017:15:58:30"

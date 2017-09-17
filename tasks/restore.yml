@@ -1,0 +1,25 @@
+- name: "Mouting remote backup folder"
+  command: nohup sshfs {{ borg.dest }}:{{ borg.path }} {{ borg.mount_point }} -p {{ borg.port }}
+
+
+- name: "Extracting archives"
+  shell: |
+    cd {{ borg.mount_point }}/..
+    borg extract {{ borg.mount_point }}::{{ item.value }}
+  with_dict: "{{ borg_restore }}"
+
+- name: "Unmounting backup folder"
+  command: umount {{ borg.mount_point }}
+
+- name: "Restoring data to volumes"
+  shell: |
+    docker run --rm -i -v {{ item.key }}:/volume -v {{ borg.mount_point }}/../tmp/{{ item.key }}:/backup:ro {{ alpine_image }} \
+        sh -c "rm -r /volume/* ;\
+        cp -a backup/. /volume ;"
+  with_dict: "{{ borg_restore }}"
+
+- name: "Removing restore folders"
+  file:
+    name: "{{ borg.mount_point }}/../tmp/{{ item.key }}"
+    state: absent
+  with_dict: "{{ borg_restore }}"
