@@ -1,4 +1,5 @@
 - name: "Copying backup script"
+  tags: borg_update
   template:
     src: backup.j2
     dest: /bin/borg_{{ inventory_hostname }}_backup
