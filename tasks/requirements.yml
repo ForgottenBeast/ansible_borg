@@ -23,7 +23,9 @@
     generate_ssh_key: True
 
 - name: "adding ssh key to backup server"
-  tags: borg_setup
+  tags: 
+    - borg_setup
+    - borg_keys
   expect:
     command: ssh-copy-id {{ borg.dest }} -p {{ borg.port }}
     responses:

@@ -10,5 +10,6 @@ the crude tar based backups.
 (it's a push backup for now)
 * *borg_setup* add borg backup script and cron job
 * *borg_restore* restore borg data to volumes using *borg_restore* list
+* *borg_keys* only copy keys to destination host
 * *borg_init* together with borg_install: create backup repository. Added mostly
   so we could skip it.
