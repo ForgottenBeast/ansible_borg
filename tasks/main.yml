@@ -1,13 +1,13 @@
-- include: requirements.yml
+- import_tasks: requirements.yml
   become: True
   tags:
     - borg_install
 
-- include: setup.yml
+- import_tasks: setup.yml
   become: True
   tags:
     - borg_setup
 
-- include: restore.yml
+- import_tasks: restore.yml
   tags: borg_restore
   become: True
